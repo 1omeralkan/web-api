@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web API Performance Analyzer</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <span class="logo-icon">⚡</span>
+                <span class="logo-text">API Analyzer</span>
+            </div>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item active" data-section="analyzer">
+                <span class="nav-icon">🔍</span>
+                <span class="nav-text">URL Analizi</span>
+            </li>
+            <li class="nav-item" data-section="history">
+                <span class="nav-icon">📜</span>
+                <span class="nav-text">Geçmiş</span>
+            </li>
+            <li class="nav-item" data-section="detail">
+                <span class="nav-icon">📊</span>
+                <span class="nav-text">Detay</span>
+            </li>
+            <li class="nav-item" data-section="about">
+                <span class="nav-icon">ℹ️</span>
+                <span class="nav-text">Hakkında</span>
+            </li>
+        </ul>
+        <div class="sidebar-footer">
+            <div class="footer-info">
+                <span>Yazılım Kalite Güvencesi</span>
+                <span class="version">v2.0.0</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <h1 id="page-title">URL Analizi</h1>
+                <p class="header-subtitle">Web API Performans ve Güvenlik Analiz Sistemi</p>
+            </div>
+            <div class="header-right">
+                <div class="status-badge online">
+                    <span class="status-dot"></span>
+                    <span>Sistem Aktif</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Analyzer Section -->
+        <section id="analyzer-section" class="section active">
+            <!-- URL Input Card -->
+            <div class="card url-input-card">
+                <div class="card-header">
+                    <h2>🌐 Web Sitesi URL'i Girin</h2>
+                </div>
+                <div class="card-body">
+                    <div class="url-input-container">
+                        <div class="input-wrapper">
+                            <span class="input-icon">🔗</span>
+                            <input type="text" id="url-input" class="url-input"
+                                placeholder="örn: google.com veya https://github.com" autocomplete="off">
+                        </div>
+                        <button id="analyze-btn" class="primary-btn" onclick="analyzeURL()">
+                            <span class="btn-icon">🚀</span>
+                            <span class="btn-text">Analiz Et</span>
+                        </button>
+                    </div>
+                    <div class="quick-links">
+                        <span>Hızlı Test:</span>
+                        <button class="quick-link" onclick="setURL('google.com')">Google</button>
+                        <button class="quick-link" onclick="setURL('github.com')">GitHub</button>
+                        <button class="quick-link" onclick="setURL('youtube.com')">YouTube</button>
+                        <button class="quick-link" onclick="setURL('twitter.com')">Twitter</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loading-state" class="loading-state hidden">
+                <div class="loader"></div>
+                <p>URL analiz ediliyor...</p>
+                <p class="loading-detail">Performans ve güvenlik kontrolleri yapılıyor...</p>
+            </div>
+
+            <!-- Results Container -->
+            <div id="results-container" class="hidden">
+                <!-- Grade Cards -->
+                <div class="grade-cards">
+                    <div class="grade-card" id="performance-grade-card">
+                        <div class="grade-label">Performans</div>
+                        <div class="grade-value" id="performance-grade">-</div>
+                        <div class="grade-detail" id="performance-detail">-</div>
+                    </div>
+                    <div class="grade-card" id="security-grade-card">
+                        <div class="grade-label">Güvenlik</div>
+                        <div class="grade-value" id="security-grade">-</div>
+                        <div class="grade-detail" id="security-detail">-</div>
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="stats-grid" id="stats-grid">
+                    <!-- Dinamik olarak doldurulacak -->
+                </div>
+
+                <!-- Charts Row -->
+                <div class="charts-row">
+                    <!-- Timing Breakdown Chart -->
+                    <div class="card chart-card">
+                        <div class="card-header">
+                            <h2>⏱️ Timing Breakdown</h2>
+                        </div>
+                        <div class="card-body chart-body">
+                            <canvas id="timing-chart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Security Headers Chart -->
+                    <div class="card chart-card">
+                        <div class="card-header">
+                            <h2>🔒 Güvenlik Başlıkları</h2>
+                        </div>
+                        <div class="card-body chart-body">
+                            <canvas id="security-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security Details -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>🛡️ Güvenlik Detayları</h2>
+                    </div>
+                    <div class="card-body">
+                        <div id="security-details" class="security-details">
+                            <!-- Dinamik olarak doldurulacak -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SSL Info -->
+                <div class="card" id="ssl-card">
+                    <div class="card-header">
+                        <h2>🔐 SSL Sertifika Bilgileri</h2>
+                    </div>
+                    <div class="card-body">
+                        <div id="ssl-info" class="ssl-info">
+                            <!-- Dinamik olarak doldurulacak -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Suggestions -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>💡 Optimizasyon Önerileri</h2>
+                    </div>
+                    <div class="card-body suggestions-body" id="suggestions-container">
+                        <!-- Dinamik olarak doldurulacak -->
+                    </div>
+                </div>
+
+                <!-- PDF Download Button -->
+                <div class="action-buttons">
+                    <button id="download-pdf-btn" class="secondary-btn" onclick="downloadPDF()">
+                        <span class="btn-icon">📄</span>
+                        <span class="btn-text">PDF Rapor İndir</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- History Section -->
+        <section id="history-section" class="section">
+            <div class="card">
+                <div class="card-header">
+                    <h2>📜 Analiz Geçmişi</h2>
+                    <button class="refresh-btn" onclick="loadHistory()">
+                        <span>🔄</span> Yenile
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>URL</th>
+                                    <th>Analiz Sayısı</th>
+                                    <th>Ort. Süre</th>
+                                    <th>Son Analiz</th>
+                                    <th>İşlem</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-table">
+                                <tr>
+                                    <td colspan="5" class="loading">Yükleniyor...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Detail Section -->
+        <section id="detail-section" class="section">
+            <div id="detail-content">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📊</div>
+                    <div class="empty-state-text">Geçmişten bir URL seçin</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about-section" class="section">
+            <div class="card">
+                <div class="card-header">
+                    <h2>ℹ️ Proje Hakkında</h2>
+                </div>
+                <div class="card-body about-content">
+                    <h3>Web API Performans ve Güvenlik Analiz Sistemi</h3>
+
+                    <p>Bu sistem, <strong>Yazılım Kalite Güvencesi ve Testi</strong> dersi kapsamında geliştirilmiştir.
+                    </p>
+
+                    <div class="features-grid">
+                        <div class="feature-item">
+                            <span class="feature-icon">🚀</span>
+                            <h4>Performans Analizi</h4>
+                            <p>DNS, TLS, TTFB ve indirme süreleri detaylı ölçülür.</p>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">🔒</span>
+                            <h4>Güvenlik Kontrolü</h4>
+                            <p>Security headers, cookie güvenliği ve SSL kontrol edilir.</p>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">📊</span>
+                            <h4>Görsel Grafikler</h4>
+                            <p>Timing breakdown ve güvenlik skoru grafik olarak gösterilir.</p>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">📜</span>
+                            <h4>Geçmiş Takibi</h4>
+                            <p>Tüm analizler kaydedilir ve trend gösterilir.</p>
+                        </div>
+                    </div>
+
+                    <div class="tech-stack">
+                        <h4>Kullanılan Teknolojiler</h4>
+                        <div class="tech-badges">
+                            <span class="tech-badge">Python</span>
+                            <span class="tech-badge">FastAPI</span>
+                            <span class="tech-badge">PostgreSQL</span>
+                            <span class="tech-badge">SQLAlchemy</span>
+                            <span class="tech-badge">HTTPX</span>
+                            <span class="tech-badge">Chart.js</span>
+                        </div>
+                    </div>
+
+                    <div class="team-section">
+                        <h4>👥 Proje Ekibi</h4>
+                        <div class="team-members">
+                            <div class="team-member">
+                                <span class="member-icon">👨‍💻</span>
+                                <span class="member-name">Ömer ALKAN</span>
+                            </div>
+                            <div class="team-member">
+                                <span class="member-icon">👨‍💻</span>
+                                <span class="member-name">M.Gazi BORAN</span>
+                            </div>
+                            <div class="team-member">
+                                <span class="member-icon">👨‍💻</span>
+                                <span class="member-name">Samet ÇİFTCİ</span>
+                            </div>
+                            <div class="team-member">
+                                <span class="member-icon">👨‍💻</span>
+                                <span class="member-name">Melih ÇALIŞIR</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="thanks-section">
+                        <h4>🙏 Teşekkürler</h4>
+                        <p>Bu projeyi geliştirmemize destek olan hocalarımıza ve emeklerini esirgemeyen tüm ekip
+                            arkadaşlarımıza teşekkür ederiz. Yazılım Kalite Güvencesi ve Testi dersi kapsamında
+                            edindiğimiz bilgileri bu projede uygulamaktan büyük keyif aldık.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+
+</html>

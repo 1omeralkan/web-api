@@ -1,0 +1,2 @@
+# Utils modülü
+# Yardımcı fonksiyonlar

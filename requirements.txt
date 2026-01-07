@@ -1,0 +1,21 @@
+# Web API Performance Monitoring System
+# Bağımlılıklar
+
+# Web Framework
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+
+# Veritabanı
+sqlalchemy[asyncio]==2.0.25
+asyncpg==0.29.0
+greenlet==3.0.3
+
+# Validation
+pydantic==2.5.3
+pydantic-settings==2.1.0
+
+# Logging
+python-json-logger==2.0.7
+
+# Utils
+python-dateutil==2.8.2
